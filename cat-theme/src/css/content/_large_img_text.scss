@@ -1,7 +1,7 @@
-.message {
+.large-img-text {
     position: relative;
     
-    &__img {
+    &--img {
         background: url('../images/message_cat.jpg');
         background-repeat: no-repeat;
         background-size: cover;
@@ -13,37 +13,37 @@
         }
     }
 
-    &__text {
+    &--text {
         background-color: rgba(0, 0, 0, 0.42);
-        color: $color-white;
+        color: $color-text-light;
         display: flex;
         height: 100%;
         flex-direction: column;
         justify-content: center;
         max-width: 50rem;
-        position: absolute;
         padding: 8rem;
+        position: absolute;
         right: 8rem;
 
         @include respond(tablet-landscape) {
-            right: 0;
             left:50%;
+            right: 0;
         }
 
         @include respond(tablet-portrait) {
-            position: relative;
-            width: auto;
-            max-width: 100%;
-            top: auto;
-            left: 0;
-            right: 0;
-            bottom: 60px;
-            padding: 50px;
-            margin: 0 20px -60px 20px;
-            background-color: #0d0d0d;
-            text-align: center;
-            display: flex;
             align-items: center;
+            background-color: #0d0d0d;
+            bottom: 6rem;
+            display: flex;
+            left: 0;
+            margin: 0 2rem -6rem 2rem;
+            max-width: 100%;
+            padding: 5rem;
+            position: relative;
+            right: 0;
+            text-align: center;
+            top: auto;
+            width: auto;
         }
 
         h3 {

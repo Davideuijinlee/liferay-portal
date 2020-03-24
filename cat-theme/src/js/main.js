@@ -1,43 +1,40 @@
-
-// const hero_parallax = document.querySelector('#hero');
-
-// window.addEventListener('scroll', function() {
-//     const scroll = hero_parallax.scrollTop;
-
-//     console.log(scroll);
-//     hero_parallax.style.backgroundSize = `${(100 + scroll/5)  + "%"}`
-//     hero_parallax.style.top =  `${-(scroll/10)  + "%"}`
-// });
-
-
 const app = (() => {
-	let body;
-	let menu_icon;
-	let menu_header;
+	let body = document.querySelector('body');
+	let menuHeader = document.querySelector('.menu-title');
+	let menuIcon = document.querySelector('.menu-icon');
+	let parallax = document.querySelector(".parallax");
 	
-	const init = () => {
-		body = document.querySelector('body');
-		menu_icon = document.querySelector('.menu-icon');
-		menu_header = document.querySelector('.menu-title');
-
-		menuItems = document.querySelectorAll('.nav__list-item');
-
-		applyListeners();
-	}
-	
-	const applyListeners = () => {
-		menu_icon.addEventListener('click', () => toggleClass(body, 'nav-active'));
-		menu_header.addEventListener('click', () => toggleClass(body, 'nav-active'));
+	applyListeners = () => {
+		menuHeader.addEventListener('click', () => toggleClass(body, 'nav-active'));
+		menuIcon.addEventListener('click', () => toggleClass(body, 'nav-active'));
 
 	}
 	
-	const toggleClass = (element, stringClass) => {
-		if(element.classList.contains(stringClass))
-			element.classList.remove(stringClass);
-		else
-			element.classList.add(stringClass);
-	}
+	const debounce = fn => {
+		let timeout;
 	
-	init();
+		return () => {
+			let arguments = arguments;
+	
+			if (timeout) {
+				window.cancelAnimationFrame(timeout);
+			}
+	
+			timeout = window.requestAnimationFrame(function () {
+				fn.apply(this, arguments);
+			});
+		}
+	};
+	
+	const ScrollHeadParallax = () => {
+		let offset = window.pageYOffset;
+
+		parallax.style.backgroundPositionY = offset * .08 + 'rem';
+	};
+		
+	window.addEventListener('scroll', function () {
+
+		debounce(ScrollHeadParallax());
+	}, false);
+
 })();
-
