@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.db;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.db.Index;
@@ -21,6 +22,7 @@ import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.IOException;
@@ -172,9 +174,19 @@ public class MySQLDB extends BaseDB {
 				else if (line.startsWith(ALTER_COLUMN_TYPE)) {
 					String[] template = buildColumnTypeTokens(line);
 
-					line = StringUtil.replace(
-						"alter table @table@ modify @old-column@ @type@;",
-						REWORD_TEMPLATE, template);
+					String nullable = template[template.length - 1];
+
+					if (Validator.isBlank(nullable)) {
+						line = StringUtil.replace(
+							"alter table @table@ modify @old-column@ @type@;",
+							REWORD_TEMPLATE, template);
+					}
+					else {
+						line = StringUtil.replace(
+							"alter table @table@ modify @old-column@ @type@ " +
+								"@nullable@;",
+							REWORD_TEMPLATE, template);
+					}
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -184,7 +196,7 @@ public class MySQLDB extends BaseDB {
 						RENAME_TABLE_TEMPLATE, template);
 				}
 
-				int pos = line.indexOf(";");
+				int pos = line.indexOf(CharPool.SEMICOLON);
 
 				if (createTable && (pos != -1)) {
 					createTable = false;

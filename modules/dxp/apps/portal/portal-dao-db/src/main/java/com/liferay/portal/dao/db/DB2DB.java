@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
 
@@ -47,7 +48,7 @@ public class DB2DB extends BaseDB {
 	}
 
 	@Override
-	public String buildSQL(String template) throws IOException {
+	public String buildSQL(String template) throws IOException, SQLException {
 		template = replaceTemplate(template);
 
 		template = reword(template);
@@ -83,11 +84,6 @@ public class DB2DB extends BaseDB {
 		sb.append("storage;\n");
 
 		return sb.toString();
-	}
-
-	@Override
-	public boolean isSupportsAlterColumnType() {
-		return _SUPPORTS_ALTER_COLUMN_TYPE;
 	}
 
 	@Override
@@ -223,7 +219,7 @@ public class DB2DB extends BaseDB {
 	}
 
 	@Override
-	protected String reword(String data) throws IOException {
+	protected String reword(String data) throws IOException, SQLException {
 		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new UnsyncStringReader(data))) {
 
@@ -239,6 +235,35 @@ public class DB2DB extends BaseDB {
 						"alter table @table@ rename column @old-column@ to " +
 							"@new-column@;",
 						REWORD_TEMPLATE, template);
+				}
+				else if (line.startsWith(ALTER_COLUMN_TYPE)) {
+					String[] template = buildColumnTypeTokens(line);
+
+					line = StringUtil.replace(
+						"alter table @table@ alter column @old-column@ set " +
+							"data type @type@;",
+						REWORD_TEMPLATE, template);
+
+					String nullable = template[template.length - 1];
+
+					if (!Validator.isBlank(nullable)) {
+						String nullableAlter;
+
+						if (nullable.equals("not null")) {
+							nullableAlter = StringUtil.replace(
+								"alter table @table@ alter column " +
+									"@old-column@ set not null;",
+								REWORD_TEMPLATE, template);
+						}
+						else {
+							nullableAlter = StringUtil.replace(
+								"alter table @table@ alter column " +
+									"@old-column@ drop not null;",
+								REWORD_TEMPLATE, template);
+						}
+
+						runSQL(nullableAlter);
+					}
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -283,8 +308,6 @@ public class DB2DB extends BaseDB {
 		Types.BLOB, Types.BLOB, Types.SMALLINT, Types.TIMESTAMP, Types.DOUBLE,
 		Types.INTEGER, Types.BIGINT, Types.VARCHAR, Types.CLOB, Types.VARCHAR
 	};
-
-	private static final boolean _SUPPORTS_ALTER_COLUMN_TYPE = false;
 
 	private static final boolean _SUPPORTS_INLINE_DISTINCT = false;
 

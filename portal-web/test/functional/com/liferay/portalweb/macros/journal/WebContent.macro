@@ -333,9 +333,9 @@ definition {
 
 		if (isSet(siteName)) {
 			AssertClick(
-				key_breadcrumbName = "sites",
+				key_breadcrumbName = "Sites and Libraries",
 				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "sites");
+				value1 = "Sites and Libraries");
 
 			AssertClick(
 				key_siteName = "${siteName}",
@@ -1441,7 +1441,8 @@ definition {
 
 		ItemSelector.addFromURL(
 			imageSourceURL = "${dmDocumentURL}",
-			navTab = "${navTab}");
+			navTab = "${navTab}",
+			type = "Audio");
 
 		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
@@ -1455,7 +1456,8 @@ definition {
 
 		ItemSelector.addFromURL(
 			imageSourceURL = "${dmDocumentURL}",
-			navTab = "${navTab}");
+			navTab = "${navTab}",
+			type = "Video");
 
 		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 

@@ -15,6 +15,9 @@
 import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
+import ClayLabel from '@clayui/label';
+import ClayLink from '@clayui/link';
+import ClayNavigationBar from '@clayui/navigation-bar';
 import {ClayPaginationWithBasicItems} from '@clayui/pagination';
 import {Editor} from 'frontend-editor-ckeditor-web';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
@@ -30,6 +33,7 @@ import Subscription from '../../components/Subscription.es';
 import TagList from '../../components/TagList.es';
 import {
 	createAnswer,
+	getMessages,
 	getThread,
 	markAsAnswerMessageBoardMessage
 } from '../../utils/client.es';
@@ -52,6 +56,7 @@ export default ({
 	const [articleBody, setArticleBody] = useState();
 	const [page, setPage] = useState(1);
 	const [question, setQuestion] = useState();
+	const [filter, setFilter] = useState('active');
 
 	useEffect(() => {
 		loadThread();
@@ -105,11 +110,48 @@ export default ({
 		[answers]
 	);
 
+	const filterBy = filterBy => {
+		let promise;
+		if (filterBy === 'votes') {
+			promise = getMessages(
+				question.id,
+				'dateModified:desc',
+				1,
+				100
+			).then(answers =>
+				answers.sort((answer1, answer2) => {
+					if (!answer1.aggregateRating || answer2.showAsAnswer) {
+						return 1;
+					}
+					if (!answer2.aggregateRating || answer1.showAsAnswer) {
+						return -1;
+					}
+
+					return (
+						answer2.aggregateRating.ratingValue -
+						answer1.aggregateRating.ratingValue
+					);
+				})
+			);
+		}
+		else if (filterBy === 'active') {
+			promise = getMessages(question.id, 'dateModified:desc');
+		}
+		else {
+			promise = getMessages(question.id, 'dateModified:asc');
+		}
+
+		promise.then(x => {
+			setFilter(filterBy);
+			setAnswers(x);
+		});
+	};
+
 	return (
-		<section>
+		<section className="c-mt-5">
 			{question && (
-				<div className="autofit-padded autofit-row">
-					<div className="autofit-col">
+				<div className="row">
+					<div className="col-1 text-center">
 						<Rating
 							aggregateRating={question.aggregateRating}
 							entityId={question.id}
@@ -121,94 +163,134 @@ export default ({
 						/>
 					</div>
 
-					<div className="autofit-col autofit-col-expand">
-						<div className="autofit-section">
-							<div className="autofit-row">
-								<div className="autofit-col-expand">
-									<h1 className="question-headline">
-										{question.headline}
-									</h1>
-									<p>
-										<small>
-											{Liferay.Language.get('asked')}{' '}
-											{dateToBriefInternationalHuman(
-												question.dateCreated
-											)}
-											{' - '}
-											{Liferay.Language.get(
-												'active'
-											)}{' '}
-											{dateToBriefInternationalHuman(
-												question.dateModified
-											)}
-											{' - '}
-											{lang.sub(
-												Liferay.Language.get(
-													'viewed-x-times'
-												),
-												[question.viewCount]
-											)}
-										</small>
-									</p>
-								</div>
-								<div>
-									<ClayButton.Group spaced={true}>
-										{question.actions.subscribe && (
-											<Subscription
-												onSubscription={subscribed =>
-													setQuestion({
-														...question,
-														subscribed
-													})
-												}
-												question={question}
-											/>
-										)}
-										{question.actions.replace && (
-											<Link
-												to={`/questions/${questionId}/edit`}
-											>
-												<ClayButton className="btn btn-secondary">
-													{Liferay.Language.get(
-														'edit'
-													)}
-												</ClayButton>
-											</Link>
-										)}
-									</ClayButton.Group>
-								</div>
-							</div>
-							<div>
-								<ArticleBodyRenderer {...question} />
+					<div className="col-10">
+						<ClayLabel
+							className="bg-light border-0 text-uppercase"
+							displayType="secondary"
+							large
+						>
+							{'Collaboration'}
+						</ClayLabel>
+
+						<div className="c-mt-2 row">
+							<div className="col-10">
+								<h1 className="question-headline">
+									{question.headline}
+								</h1>
+
+								<p className="c-mb-0 small text-secondary">
+									{Liferay.Language.get('asked')}{' '}
+									{dateToBriefInternationalHuman(
+										question.dateCreated
+									)}
+									{' - '}
+									{Liferay.Language.get('active')}{' '}
+									{dateToBriefInternationalHuman(
+										question.dateModified
+									)}
+									{' - '}
+									{lang.sub(
+										Liferay.Language.get('viewed-x-times'),
+										[question.viewCount]
+									)}
+								</p>
 							</div>
 
+							<div className="col-2">
+								<ClayButton.Group spaced={true}>
+									{question.actions.subscribe && (
+										<Subscription
+											onSubscription={subscribed =>
+												setQuestion({
+													...question,
+													subscribed
+												})
+											}
+											question={question}
+										/>
+									)}
+
+									{question.actions.replace && (
+										<Link
+											to={`/questions/${questionId}/edit`}
+										>
+											<ClayButton displayType="secondary">
+												{Liferay.Language.get('edit')}
+											</ClayButton>
+										</Link>
+									)}
+								</ClayButton.Group>
+							</div>
+						</div>
+
+						<div className="c-mt-4">
+							<ArticleBodyRenderer {...question} />
+						</div>
+
+						<div className="c-mt-4">
 							<TagList tags={question.keywords} />
 						</div>
 
-						<div
-							className="autofit-row"
-							style={{alignItems: 'center'}}
-						>
-							<div className="autofit-col-expand">
-								<hr />
-							</div>
-							<div>
-								<CreatorRow question={question} />
-							</div>
+						<div className="c-mt-4 position-relative question-creator text-right">
+							<CreatorRow question={question} />
 						</div>
 
-						<h3 className="subtitle">
+						<h3 className="c-mt-4 text-secondary">
 							{answers.length} {Liferay.Language.get('answers')}
 						</h3>
 
-						{answers.map(answer => (
-							<Answer
-								answer={answer}
-								answerChange={answerChange}
-								deleteAnswer={deleteAnswer}
-								key={answer.id}
-							/>
-						))}
+						{!!answers.length && (
+							<div className="border-bottom c-mt-3">
+								<ClayNavigationBar triggerLabel="Active">
+									<ClayNavigationBar.Item
+										active={filter === 'active'}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+											onClick={() => filterBy('active')}
+										>
+											{Liferay.Language.get('active')}
+										</ClayLink>
+									</ClayNavigationBar.Item>
+
+									<ClayNavigationBar.Item
+										active={filter === 'oldest'}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+											onClick={() => filterBy('oldest')}
+										>
+											{Liferay.Language.get('oldest')}
+										</ClayLink>
+									</ClayNavigationBar.Item>
+
+									<ClayNavigationBar.Item
+										active={filter === 'votes'}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+											onClick={() => filterBy('votes')}
+										>
+											{Liferay.Language.get('votes')}
+										</ClayLink>
+									</ClayNavigationBar.Item>
+								</ClayNavigationBar>
+							</div>
+						)}
+
+						<div className="c-mt-3">
+							{answers.map(answer => (
+								<Answer
+									answer={answer}
+									answerChange={answerChange}
+									deleteAnswer={deleteAnswer}
+									key={answer.id}
+								/>
+							))}
+						</div>
 
 						{!!answers.totalCount &&
 							answers.totalCount > answers.pageSize && (
@@ -223,47 +305,44 @@ export default ({
 							)}
 
 						{context.canCreateThread && (
-							<>
+							<div className="c-mt-5">
 								<ClayForm>
 									<ClayForm.Group className="form-group-sm">
 										<label htmlFor="basicInput">
 											{Liferay.Language.get(
 												'your-answer'
 											)}
-											<span className="reference-mark">
+
+											<span className="c-ml-2 reference-mark">
 												<ClayIcon symbol="asterisk" />
 											</span>
 										</label>
 
-										<Editor
-											config={getCKEditorConfig()}
-											data={articleBody}
-											onBeforeLoad={onBeforeLoadCKEditor}
-											onChange={event =>
-												setArticleBody(
-													event.editor.getData()
-												)
-											}
-										/>
+										<div className="c-mt-2">
+											<Editor
+												config={getCKEditorConfig()}
+												data={articleBody}
+												onBeforeLoad={
+													onBeforeLoadCKEditor
+												}
+												onChange={event =>
+													setArticleBody(
+														event.editor.getData()
+													)
+												}
+											/>
+										</div>
 									</ClayForm.Group>
 								</ClayForm>
 
-								<div className="sheet-footer">
-									<div className="btn-group-item">
-										<div className="btn-group-item">
-											<button
-												className="btn btn-primary"
-												disabled={!articleBody}
-												onClick={postAnswer}
-											>
-												{Liferay.Language.get(
-													'post-answer'
-												)}
-											</button>
-										</div>
-									</div>
-								</div>
-							</>
+								<ClayButton
+									disabled={!articleBody}
+									displayType="primary"
+									onClick={postAnswer}
+								>
+									{Liferay.Language.get('post-answer')}
+								</ClayButton>
+							</div>
 						)}
 					</div>
 				</div>

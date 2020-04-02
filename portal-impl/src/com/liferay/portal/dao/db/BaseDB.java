@@ -15,6 +15,7 @@
 package com.liferay.portal.dao.db;
 
 import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
@@ -130,7 +131,8 @@ public abstract class BaseDB implements DB {
 	}
 
 	@Override
-	public abstract String buildSQL(String template) throws IOException;
+	public abstract String buildSQL(String template)
+		throws IOException, SQLException;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -647,7 +649,7 @@ public abstract class BaseDB implements DB {
 	}
 
 	protected String[] buildColumnNameTokens(String line) {
-		String[] words = StringUtil.split(line, ' ');
+		String[] words = StringUtil.split(line, CharPool.SPACE);
 
 		String nullable = "";
 
@@ -659,19 +661,17 @@ public abstract class BaseDB implements DB {
 	}
 
 	protected String[] buildColumnTypeTokens(String line) {
-		String[] words = StringUtil.split(line, ' ');
+		String[] words = StringUtil.split(line, CharPool.SPACE);
 
 		String nullable = "";
 
 		if (words.length == 6) {
-			nullable = "not null;";
+			nullable = "not null";
 		}
 		else if (words.length == 5) {
-			nullable = words[4];
+			nullable = "null";
 		}
 		else if (words.length == 4) {
-			nullable = "not null;";
-
 			if (words[3].endsWith(";")) {
 				words[3] = words[3].substring(0, words[3].length() - 1);
 			}
@@ -681,7 +681,7 @@ public abstract class BaseDB implements DB {
 	}
 
 	protected String[] buildTableNameTokens(String line) {
-		String[] words = StringUtil.split(line, StringPool.SPACE);
+		String[] words = StringUtil.split(line, CharPool.SPACE);
 
 		return new String[] {words[1], words[2]};
 	}
@@ -813,7 +813,8 @@ public abstract class BaseDB implements DB {
 		return _applyMaxStringIndexLengthLimitation(sb.toString());
 	}
 
-	protected abstract String reword(String data) throws IOException;
+	protected abstract String reword(String data)
+		throws IOException, SQLException;
 
 	protected static final String ALTER_COLUMN_NAME = "alter_column_name ";
 

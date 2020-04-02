@@ -34,9 +34,9 @@ export class ErrorBoundary extends React.Component {
 					<ClayAlert
 						autoClose={5000}
 						displayType="danger"
-						title={'Error'}
+						title={'Error:'}
 					>
-						{'Error loading'}
+						{'Could not load the page'}
 					</ClayAlert>
 				</>
 			);

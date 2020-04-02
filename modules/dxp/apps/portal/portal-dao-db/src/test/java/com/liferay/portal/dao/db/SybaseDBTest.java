@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 
-import java.io.IOException;
-
 import java.lang.reflect.Method;
 
 import org.junit.AfterClass;
@@ -33,6 +31,7 @@ import org.junit.Test;
 
 /**
  * @author Miguel Pastor
+ * @author Alberto Chaparro
  */
 public class SybaseDBTest extends BaseDBTestCase {
 
@@ -67,7 +66,36 @@ public class SybaseDBTest extends BaseDBTestCase {
 	}
 
 	@Test
-	public void testRewordRenameTable() throws IOException {
+	public void testRewordAlterColumnType() throws Exception {
+		Assert.assertEquals(
+			"alter table DLFolder modify userName varchar(75)\ngo\n",
+			buildSQL("alter_column_type DLFolder userName VARCHAR(75);"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNoSemicolon() throws Exception {
+		Assert.assertEquals(
+			"alter table DLFolder modify userName varchar(75)\ngo\n",
+			buildSQL("alter_column_type DLFolder userName VARCHAR(75)"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNotNull() throws Exception {
+		Assert.assertEquals(
+			"alter table DLFolder modify userName varchar(75) not null;\n",
+			buildSQL(
+				"alter_column_type DLFolder userName VARCHAR(75) not null;"));
+	}
+
+	@Test
+	public void testRewordAlterColumnTypeNull() throws Exception {
+		Assert.assertEquals(
+			"alter table DLFolder modify userName varchar(75) null;\n",
+			buildSQL("alter_column_type DLFolder userName VARCHAR(75) null;"));
+	}
+
+	@Test
+	public void testRewordRenameTable() throws Exception {
 		Assert.assertEquals(
 			"exec sp_rename a, b;\n", buildSQL(RENAME_TABLE_QUERY));
 	}

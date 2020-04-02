@@ -21,8 +21,8 @@ export default ({articleBody, encodingFormat}) => {
 			{encodingFormat === 'bbcode' && (
 				<p>{parser.toReact(articleBody)}</p>
 			)}
-			{encodingFormat === 'html' && (
-				<div dangerouslySetInnerHTML={{__html: articleBody}} />
+			{encodingFormat !== 'bbcode' && (
+				<p dangerouslySetInnerHTML={{__html: articleBody}} />
 			)}
 		</>
 	);

@@ -146,12 +146,12 @@ export const deleteMessage = messageBoardMessage =>
 export const getTags = (page = 1, siteKey) =>
 	request(gql`
         query {
-            keywordsRanked(page: ${page}, pageSize: 20, siteKey: ${siteKey}){
+            taxonomyCategoryRanked(page: ${page}, pageSize: 20, siteKey: ${siteKey}){
                 items {
                     name
                     dateCreated
                     id
-                    keywordUsageCount
+                    taxonomyCategoryUsageCount
                 }
                 lastPage
                 page
@@ -251,6 +251,7 @@ export const getMessages = (
               messageBoardThreadMessageBoardMessages(messageBoardThreadId: ${parentMessageBoardMessageId}, page: ${page}, pageSize: ${pageSize}, sort: ${'showAsAnswer:desc,' +
 		sort}){
                 items {
+                	actions
                     aggregateRating {
                         ratingAverage
                         ratingCount
@@ -261,14 +262,17 @@ export const getMessages = (
                         id
                         name
                     }
+                    encodingFormat
                     id
                     messageBoardMessages {
                         items {
+                        	actions
                             articleBody
                             creator {
                                 id
                                 name
                             }
+                            encodingFormat
                             id
                             showAsAnswer
                         }
@@ -355,7 +359,7 @@ export const getThreads = ({
 export const getRankedThreads = (
 	dateModified,
 	page = 1,
-	pageSize = 30,
+	pageSize = 20,
 	sort = ''
 ) =>
 	request(gql`
@@ -413,16 +417,6 @@ export const getRelatedThreads = (search = '', siteKey) =>
                 page 
                 pageSize 
                 totalCount
-            }
-        }`);
-
-export const getUserAccount = userAccountId =>
-	request(gql`
-        query {
-            userAccount(userAccountId: ${userAccountId}) {
-                emailAddress
-                id
-                name
             }
         }`);
 

@@ -140,11 +140,6 @@ public class SQLServerDB extends BaseDB {
 	}
 
 	@Override
-	public boolean isSupportsAlterColumnType() {
-		return _SUPPORTS_ALTER_COLUMN_TYPE;
-	}
-
-	@Override
 	public boolean isSupportsNewUuidFunction() {
 		return _SUPPORTS_NEW_UUID_FUNCTION;
 	}
@@ -181,8 +176,11 @@ public class SQLServerDB extends BaseDB {
 					String[] template = buildColumnTypeTokens(line);
 
 					line = StringUtil.replace(
-						"alter table @table@ alter column @old-column@ @type@;",
+						"alter table @table@ alter column @old-column@ " +
+							"@type@ @nullable@;",
 						REWORD_TEMPLATE, template);
+
+					line = StringUtil.replace(line, " ;", ";");
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -224,11 +222,9 @@ public class SQLServerDB extends BaseDB {
 
 	private static final int[] _SQL_TYPES = {
 		Types.LONGVARBINARY, Types.LONGVARBINARY, Types.BIT, Types.TIMESTAMP,
-		Types.DOUBLE, Types.INTEGER, Types.BIGINT, Types.LONGVARCHAR,
-		Types.LONGVARCHAR, Types.VARCHAR
+		Types.DOUBLE, Types.INTEGER, Types.BIGINT, Types.NVARCHAR,
+		Types.NVARCHAR, Types.NVARCHAR
 	};
-
-	private static final boolean _SUPPORTS_ALTER_COLUMN_TYPE = false;
 
 	private static final boolean _SUPPORTS_NEW_UUID_FUNCTION = true;
 
