@@ -1,0 +1,39 @@
+.footer {
+	background-color: $theme-main-dark;
+	color: $theme-main-light;
+	display:flex;
+	justify-content: space-around;
+}
+
+.section-container {
+	padding: 50px;
+	width: 33vw;
+}
+
+a {
+	color:$theme-main-light;
+
+	&:hover {
+		color: $theme-main-color;
+	}
+}
+
+@include media-breakpoint-down(md) {
+  	.footer {
+    	flex-direction: column;
+  	}
+
+  	.section-container {
+    	width: 100vw;
+  	}
+}
+
+@include media-breakpoint-down(sm) {
+  	.footer {
+    	flex-direction: column;
+  	}
+
+  	.section-container {
+    	width: 100vw;
+  	}
+}

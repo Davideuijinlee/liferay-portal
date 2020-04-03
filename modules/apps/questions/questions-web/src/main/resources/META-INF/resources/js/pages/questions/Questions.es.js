@@ -13,14 +13,15 @@
  */
 
 import ClayButton from '@clayui/button';
+import ClayLabel from '@clayui/label';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {ClayPaginationWithBasicItems} from '@clayui/pagination';
-import classnames from 'classnames';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 
 import {AppContext} from '../../AppContext.es';
 import ArticleBodyRenderer from '../../components/ArticleBodyRenderer.es';
+import Error from '../../components/Error.es';
 import QuestionBadge from '../../components/QuestionsBadge.es';
 import TagList from '../../components/TagList.es';
 import UserIcon from '../../components/UserIcon.es';
@@ -35,9 +36,10 @@ export default ({
 }) => {
 	const context = useContext(AppContext);
 
+	const [error, setError] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [page, setPage] = useState(1);
-	const [pageSize] = useState(5);
+	const [pageSize] = useState(20);
 	const [questions, setQuestions] = useState([]);
 	const [activeFilter, setActiveFilter] = useState('modified');
 
@@ -47,8 +49,12 @@ export default ({
 
 	const renderQuestions = questions => {
 		questions
-			.then(data => setQuestions(data))
-			.then(() => setLoading(false));
+			.then(data => setQuestions(data || []))
+			.then(() => setLoading(false))
+			.catch(_ => {
+				setLoading(false);
+				setError({message: 'Loading Questions', title: 'Error'});
+			});
 	};
 
 	const loadThreads = useCallback(
@@ -99,33 +105,36 @@ export default ({
 		<section className="c-mt-5 c-mx-auto col-xl-10">
 			<ClayButton.Group>
 				<ClayButton
-					className={classnames('secondary', {
-						'btn-secondary': activeFilter !== 'created'
-					})}
+					displayType={
+						activeFilter === 'created' ? 'primary' : 'secondary'
+					}
 					onClick={() => filterBy('created')}
 				>
 					{Liferay.Language.get('latest-created')}
 				</ClayButton>
+
 				<ClayButton
-					className={classnames('secondary', {
-						'btn-secondary': activeFilter !== 'modified'
-					})}
+					displayType={
+						activeFilter === 'modified' ? 'primary' : 'secondary'
+					}
 					onClick={() => filterBy('modified')}
 				>
 					{Liferay.Language.get('latest-edited')}
 				</ClayButton>
+
 				<ClayButton
-					className={classnames('secondary', {
-						'btn-secondary': activeFilter !== 'week'
-					})}
+					displayType={
+						activeFilter === 'week' ? 'primary' : 'secondary'
+					}
 					onClick={() => filterBy('week')}
 				>
 					{Liferay.Language.get('week')}
 				</ClayButton>
+
 				<ClayButton
-					className={classnames('secondary', {
-						'btn-secondary': activeFilter !== 'month'
-					})}
+					displayType={
+						activeFilter === 'month' ? 'primary' : 'secondary'
+					}
 					onClick={() => filterBy('month')}
 				>
 					{Liferay.Language.get('month')}
@@ -138,107 +147,105 @@ export default ({
 				questions.items &&
 				questions.items.map(question => (
 					<div
-						className={'c-mt-4 c-p-3 question-row'}
+						className="c-mt-4 c-p-3 position-relative question-row text-secondary"
 						key={question.id}
 					>
-						<div className="autofit-padded-no-gutter autofit-row">
-							<div className="autofit-col autofit-col-expand">
+						<div className="align-items-center d-flex justify-content-between">
+							<ClayLabel
+								className="bg-light border-0 stretched-link-layer text-uppercase"
+								displayType="secondary"
+								large
+							>
+								{'Collaboration'}
 								{/* {question.category} */}
-							</div>
+							</ClayLabel>
 
-							<div className="autofit-col">
-								<ul className="question-list">
-									<li>
-										<QuestionBadge
-											symbol={
-												normalizeRating(
-													question.aggregateRating
-												) < 0
-													? 'caret-bottom'
-													: 'caret-top'
-											}
-											value={normalizeRating(
+							<ul className="question-list">
+								<li>
+									<QuestionBadge
+										symbol={
+											normalizeRating(
 												question.aggregateRating
-											)}
-										/>
-									</li>
+											) < 0
+												? 'caret-bottom'
+												: 'caret-top'
+										}
+										value={normalizeRating(
+											question.aggregateRating
+										)}
+									/>
+								</li>
 
-									<li>
-										<QuestionBadge
-											symbol="view"
-											value={question.viewCount}
-										/>
-									</li>
+								<li>
+									<QuestionBadge
+										symbol="view"
+										value={question.viewCount}
+									/>
+								</li>
 
-									<li>
-										<QuestionBadge
-											className={
-												hasValidAnswer(question)
-													? 'question-badge-success'
-													: ''
-											}
-											symbol={
-												hasValidAnswer(question)
-													? 'check-circle-full'
-													: 'message'
-											}
-											value={
-												question.messageBoardMessages
-													.items.length
-											}
-										/>
-									</li>
-								</ul>
-							</div>
+								<li>
+									<QuestionBadge
+										className={
+											hasValidAnswer(question)
+												? 'question-badge-success'
+												: ''
+										}
+										symbol={
+											hasValidAnswer(question)
+												? 'check-circle-full'
+												: 'message'
+										}
+										value={
+											question.messageBoardMessages.items
+												.length
+										}
+									/>
+								</li>
+							</ul>
 						</div>
 
 						<Link
 							className="question-title stretched-link"
 							to={'/questions/' + question.id}
 						>
-							<h2 className="c-mb-0 stretched-link-layer">
+							<h2 className="c-mb-0 stretched-link-layer text-dark">
 								{question.headline}
 							</h2>
 						</Link>
 
-						<p className="c-mb-0 c-mt-3 stretched-link-layer text-truncate">
+						<div className="c-mb-0 c-mt-3 stretched-link-layer text-truncate">
 							<ArticleBodyRenderer {...question} />
-						</p>
+						</div>
 
-						<div className="autofit-padded-no-gutters autofit-row autofit-row-center c-mt-3">
-							<div className="autofit-col autofit-col-expand">
-								<div className="autofit-row autofit-row-center">
-									<Link
-										className="question-user stretched-link-layer"
-										to={
-											'/questions/creator/' +
-											question.creator.id
-										}
-									>
-										<UserIcon
-											fullName={question.creator.name}
-											portraitURL={question.creator.image}
-											size="sm"
-											userId={String(question.creator.id)}
-										/>
+						<div className="align-items-center c-mt-3 d-flex justify-content-between">
+							<div className="stretched-link-layer">
+								<Link
+									to={
+										'/questions/creator/' +
+										question.creator.id
+									}
+								>
+									<UserIcon
+										fullName={question.creator.name}
+										portraitURL={question.creator.image}
+										size="sm"
+										userId={String(question.creator.id)}
+									/>
 
-										<strong className="c-ml-2">
-											{question.creator.name}
-										</strong>
-									</Link>
+									<strong className="c-ml-2 text-dark">
+										{question.creator.name}
+									</strong>
+								</Link>
 
-									<span className="c-ml-2 stretched-link-layer">
-										{'- ' +
-											dateToInternationalHuman(
-												question.dateModified
-											)}
-									</span>
-								</div>
+								<span className="c-ml-2 small">
+									{'- ' +
+										dateToInternationalHuman(
+											question.dateModified
+										)}
+								</span>
 							</div>
 
-							<div className="autofit-col">
-								<TagList tags={question.keywords} />
-							</div>
+							<TagList tags={question.keywords} />
 						</div>
 					</div>
 				))
@@ -255,6 +262,7 @@ export default ({
 						)}
 					/>
 				)}
+			<Error error={error} />
 		</section>
 	);
 };

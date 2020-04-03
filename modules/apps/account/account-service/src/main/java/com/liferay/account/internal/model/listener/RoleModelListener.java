@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.exception.RequiredRoleException;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
@@ -52,6 +53,10 @@ public class RoleModelListener extends BaseModelListener<Role> {
 			return;
 		}
 
+		if (!Objects.equals(role.getType(), RoleConstants.TYPE_ACCOUNT)) {
+			return;
+		}
+
 		AccountRole accountRole =
 			_accountRoleLocalService.fetchAccountRoleByRoleId(role.getRoleId());
 
@@ -75,19 +80,6 @@ public class RoleModelListener extends BaseModelListener<Role> {
 	}
 
 	@Override
-	public void onAfterRemove(Role role) throws ModelListenerException {
-		AccountRole accountRole =
-			_accountRoleLocalService.fetchAccountRoleByRoleId(role.getRoleId());
-
-		if (accountRole != null) {
-			_userGroupRoleLocalService.deleteUserGroupRolesByRoleId(
-				role.getRoleId());
-
-			_accountRolePersistence.remove(accountRole);
-		}
-	}
-
-	@Override
 	public void onBeforeRemove(Role role) throws ModelListenerException {
 		if (CompanyThreadLocal.isDeleteInProcess()) {
 			return;
@@ -105,17 +97,23 @@ public class RoleModelListener extends BaseModelListener<Role> {
 		AccountRole accountRole =
 			_accountRoleLocalService.fetchAccountRoleByRoleId(role.getRoleId());
 
-		if ((accountRole != null) &&
-			!Objects.equals(
-				AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT,
-				accountRole.getAccountEntryId())) {
+		if (accountRole != null) {
+			if (!Objects.equals(
+					AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT,
+					accountRole.getAccountEntryId())) {
 
-			throw new ModelListenerException(
-				new RequiredRoleException(
-					StringBundler.concat(
-						"Role \"", role.getName(),
-						"\" is required by account role ",
-						accountRole.getAccountRoleId())));
+				throw new ModelListenerException(
+					new RequiredRoleException(
+						StringBundler.concat(
+							"Role \"", role.getName(),
+							"\" is required by account role ",
+							accountRole.getAccountRoleId())));
+			}
+
+			_userGroupRoleLocalService.deleteUserGroupRolesByRoleId(
+				role.getRoleId());
+
+			_accountRolePersistence.remove(accountRole);
 		}
 	}
 

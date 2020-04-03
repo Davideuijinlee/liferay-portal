@@ -29,7 +29,7 @@ export default () => {
 	const [tags, setTags] = useState({});
 
 	useEffect(() => {
-		getTags(page, context.siteKey).then(data => setTags(data));
+		getTags(page, context.siteKey).then(data => setTags(data || []));
 	}, [page, context.siteKey]);
 
 	return (
@@ -53,7 +53,9 @@ export default () => {
 													Liferay.Language.get(
 														'used-x-times'
 													),
-													[tag.keywordUsageCount]
+													[
+														tag.taxonomyCategoryUsageCount
+													]
 												)}
 											</ClayCard.Description>
 											<ClayCard.Description displayType="text">

@@ -1,0 +1,201 @@
+.theme-header {
+	background-color: $theme-transparent;
+	height: 12vh;
+	max-width: 100%;
+	position: fixed;
+	transition: 500ms ease;
+	width: 100vw;
+	z-index: 1;
+
+	.theme-user {
+		justify-content: flex-end;
+	}
+
+	.theme-user a {
+		color: $theme-main-color;
+	}
+
+	.user-avatar-link .lexicon-icon {
+		color: $theme-main-color;
+	}
+
+	li.nav-item {
+		a.nav-link {
+			color: $theme-main-light;
+		}
+
+		&:hover {
+			a {
+				color: $theme-main-color;
+			}
+		}
+
+		&.selected {
+			& a.nav-link {
+				color: $theme-main-color;
+			}
+		} 
+	}
+
+	li.selected {
+		& a.nav-link {
+			color: $theme-main-color;
+		}
+	}
+}
+
+.dropdown {
+	ul.child-menu {
+		display: none;
+		margin-top: -10px;
+		padding-inline-start: 0;
+		list-style-type: none;
+	}
+
+	&:hover {
+		.child-menu {
+			display: block;
+		}
+	}
+}
+
+.navbar-nav {
+	justify-content: center;
+}
+
+.burger {
+	cursor:pointer;
+	display: none;
+	width: 40px;
+}
+
+.burger div {
+	background-color: $theme-main-light;
+	height: 3px;
+	margin: 5px;
+	width: 25px;
+}
+
+@include media-breakpoint-down(md) {
+	body {
+		overflow-x: hidden;
+	}
+
+	.theme-header {
+		height: 100vh;
+		width: 100vw;
+	}
+
+	.navbar-nav {
+		flex-direction: column;
+	}
+
+	.mr-auto {
+		display:none;
+	}
+
+	#navbar-logo {
+		display: none;
+	}
+
+	.burger-logo #navbar-logo {
+		display: flex;
+	}
+
+	.burger {
+		display: block;
+	}
+
+	.burger-header {
+		display: flex;
+	}
+
+	.burger-inactive-header {
+		display: none;
+	}
+
+	.dropdown {
+		ul.child-menu {
+			display: none;
+			list-style-type: none;
+			margin-top: -10px;
+			padding-inline-start: 0;
+		}
+	
+		&:hover {
+			.child-menu {
+				display: block;
+			}
+		}
+	}
+
+	#navigation-link {
+		color: $theme-main-dark;
+		
+		&:hover {
+			color: $theme-main-color;
+		}
+	}
+}
+
+@include media-breakpoint-down(sm) {
+	body {
+		overflow-x: hidden;
+	}
+
+	.theme-header {
+		height: 100vh;
+		width: 100vw;
+	}
+
+	.navbar-nav {
+		flex-direction: column;
+	}
+
+	.mr-auto {
+		display:none;
+	}
+
+	#navbar-logo {
+		display: none;
+	}
+
+	.burger-logo #navbar-logo {
+		display: flex;
+	}
+
+	.burger {
+		display: block;
+	}
+
+	.burger-header {
+		display: flex;
+	}
+
+	.burger-inactive-header {
+		display: none;
+	}
+
+	.dropdown {
+		ul.child-menu {
+			display: none;
+			list-style-type: none;
+			margin-top: -10px;
+			padding-inline-start: 0;
+		}
+	
+		&:hover {
+			.child-menu {
+				display: block;
+			}
+		}
+	}
+
+	#navigation-link {
+		color: $theme-main-dark;
+		
+		&:hover {
+			color: $theme-main-color;
+		}
+	}
+}

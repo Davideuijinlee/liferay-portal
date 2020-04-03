@@ -178,33 +178,39 @@
 }
 
 .btn:not(.btn-monospaced):not(.btn-unstyled) {
-	@include button-size(
-		var(--btn-padding-y),
-		var(--btn-padding-x),
-		var(--btn-font-size),
-		var(--btn-line-height),
-		var(--btn-border-radius)
-	);
+	font-size: var(--btn-font-size);
+	line-height: var(--btn-line-height);
+	padding: var(--btn-padding-y) var(--btn-padding-x);
+
+	@at-root {
+		:not(.btn-group) > & {
+			border-radius: var(--btn-border-radius);
+		}
+	}
 }
 
 .btn-lg:not(.btn-monospaced):not(.btn-unstyled) {
-	@include button-size(
-		var(--btn-padding-y-lg),
-		var(--btn-padding-x-lg),
-		var(--btn-font-size-lg),
-		var(--btn-line-height-lg),
-		var(--btn-border-radius-lg)
-	);
+	font-size: var(--btn-font-size-lg);
+	line-height: var(--btn-line-height-lg);
+	padding: var(--btn-padding-y) var(--btn-padding-x-lg);
+
+	@at-root {
+		:not(.btn-group) > & {
+			border-radius: var(--btn-border-radius-lg);
+		}
+	}
 }
 
 .btn-sm:not(.btn-monospaced):not(.btn-unstyled) {
-	@include button-size(
-		var(--btn-padding-y-sm),
-		var(--btn-padding-x-sm),
-		var(--btn-font-size-sm),
-		var(--btn-line-height-sm),
-		var(--btn-border-radius-sm)
-	);
+	font-size: var(--btn-font-size-sm);
+	line-height: var(--btn-line-height-sm);
+	padding: var(--btn-padding-y) var(--btn-padding-x-sm);
+
+	@at-root {
+		:not(.btn-group) > & {
+			border-radius: var(--btn-border-radius-sm);
+		}
+	}
 }
 
 // Shadows
@@ -341,6 +347,12 @@
 	height: var(--input-height);
 	line-height: var(--input-line-height);
 	padding: var(--input-inset-padding-y) var(--input-inset-padding-x);
+
+	&.input-group-inset-item-before {
+		border-radius: var(--input-border-radius) 0 0 var(--input-border-radius);
+		border-width: var(--input-border-width) 0 var(--input-border-width)
+			var(--input-border-width);
+	}
 }
 
 .custom-control-input:checked ~ .custom-control-label::before {

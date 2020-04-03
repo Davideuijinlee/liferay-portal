@@ -16,6 +16,7 @@ package com.liferay.portal.dao.db;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.db.DBInspector;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.db.Index;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
 
@@ -49,7 +51,7 @@ public class OracleDB extends BaseDB {
 	}
 
 	@Override
-	public String buildSQL(String template) throws IOException {
+	public String buildSQL(String template) throws IOException, SQLException {
 		template = replaceTemplate(template);
 		template = reword(template);
 		template = StringUtil.replace(
@@ -154,6 +156,16 @@ public class OracleDB extends BaseDB {
 		return _ORACLE;
 	}
 
+	protected boolean isNullable(String tableName, String columnName)
+		throws SQLException {
+
+		try (Connection con = DataAccess.getConnection()) {
+			DBInspector dbInspector = new DBInspector(con);
+
+			return dbInspector.isNullable(tableName, columnName);
+		}
+	}
+
 	@Override
 	protected String replaceTemplate(String template) {
 
@@ -181,7 +193,7 @@ public class OracleDB extends BaseDB {
 	}
 
 	@Override
-	protected String reword(String data) throws IOException {
+	protected String reword(String data) throws IOException, SQLException {
 		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new UnsyncStringReader(data))) {
 
@@ -201,9 +213,25 @@ public class OracleDB extends BaseDB {
 				else if (line.startsWith(ALTER_COLUMN_TYPE)) {
 					String[] template = buildColumnTypeTokens(line);
 
+					String nullable = template[template.length - 1];
+
+					if (!Validator.isBlank(nullable)) {
+						boolean currentNullable = isNullable(
+							template[0], template[1]);
+
+						if ((nullable.equals("null") && currentNullable) ||
+							(nullable.equals("not null") && !currentNullable)) {
+
+							nullable = StringPool.BLANK;
+						}
+					}
+
 					line = StringUtil.replace(
-						"alter table @table@ modify @old-column@ @type@;",
+						"alter table @table@ modify @old-column@ @type@ " +
+							nullable + ";",
 						REWORD_TEMPLATE, template);
+
+					line = StringUtil.replace(line, " ;", ";");
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
